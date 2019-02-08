@@ -1,0 +1,654 @@
+<html> <head> <title>Complexity and Big-O Notation</title>
+</head>
+
+<A NAME=top><H1>Complexity and Big-O Notation</H1></A>
+
+<HR>
+<H2>Contents</H2>
+<UL>
+  <LI><A HREF="#introduction">Introduction</A>
+  <UL>
+    <LI> <a href="#youtry1">Test Yourself #1</a>
+    <LI> <a href="#youtry2">Test Yourself #2</a>
+  </UL>
+  <LI><A HREF="#bigO">Big-O Notation</A>
+  <LI><A HREF="#application">How to Determine Complexities</A>
+  <UL>
+    <LI><A HREF="#youtry3">Test Yourself #3</A>
+    <LI><A HREF="#youtry4">Test Yourself #4</A>
+  </UL>
+  <LI><A HREF="#best">Best-case and Average-case Complexity</A>
+  <LI><A HREF="#constants">When do Constants Matter?</A>
+</UL>
+
+<A NAME="introduction">
+<H2>Introduction</H2>
+</A>
+</B><P>An important question is: How efficient is an algorithm or
+piece of code?  Efficiency covers lots of resources, including:</P>
+
+<UL>
+  <LI>CPU (time) usage</LI>
+  <LI>memory usage</LI>
+  <LI>disk usage</LI>
+  <LI>network usage</LI>
+</UL>
+
+<P>All are important but we will mostly talk about CPU time in 367.
+Other classes will discuss other resources (e.g., disk usage may be an
+important topic in a database class).</P>
+
+<P>Be careful to differentiate between:</P>
+<OL>
+  <LI> Performance: how much time/memory/disk/... is actually used when
+       a program is run.  This depends on the machine, compiler, etc.
+       as well as the code.
+
+  <LI> Complexity: how do the resource requirements of a program or algorithm
+       scale, i.e., what happens as the size of the problem being solved
+       gets larger.
+</OL>
+Complexity affects performance but not the other way around.
+
+<P>
+The time required by a method is proportional to the number
+of "basic operations" that it performs.  Here are some examples
+of basic operations:
+<UL>
+  <LI> one arithmetic operation (e.g., +, *).
+  <LI> one assignment
+  <LI> one test (e.g., x == 0)
+  <LI> one read
+  <LI> one write (of a primitive type)
+</UL>
+
+<P>
+Some methods perform the same number of operations every time they are
+called.
+For example, the <em>size</em> method of the <em>List</em> class
+always performs
+just one operation: <tt>return numItems</tt>; the number of operations
+is independent of the size of the list.
+We say that methods like this (that always perform a fixed number of
+basic operations) require <b>constant time</b>.
+
+<P>
+Other methods may perform different numbers of operations, depending on
+the value of a parameter or a field.
+For example, for the array implementation of the <em>List</em> class,
+the <em>remove</em> method has to
+move over all of the items that were to the right of the item that was
+removed (to fill in the gap).
+The number of moves depends both on the position of the removed item
+and the number of items in the list.
+We call the important factors (the parameters and/or fields whose
+values affect the number of operations performed) the <b>problem size</b>
+or the <b>input size</b>.
+
+<P>
+When we consider the complexity of a method, we don't really care about the
+<b>exact</b> number of operations that are performed; instead, we care
+about how the number of operations relates to the problem size.
+If the problem size doubles, does the number of operations stay the same?
+double? increase in some other way?
+For constant-time methods like the <em>size</em> method, doubling the
+problem size does not affect the number of operations (which stays the
+same).
+
+<P>
+Furthermore, we are usually interested in the <b>worst case</b>: what is the
+<b>most</b> operations that might be performed for a given problem size
+(other cases -- best case and average case -- are discussed
+<a href="#best">below</a>).
+For example, as discussed above, the <em>remove</em> method has to
+move all of the items that come
+after the removed item one place to the left in the array.
+In the worst case, <b>all</b> of the items in the array must be moved.
+Therefore, in the worst case, the time for <em>remove</em> is proportional
+to the number of items in the list, and
+we say that the worst-case time for <em>remove</em> is
+<b>linear</b> in the number of items in the list.
+For a linear-time method, if the problem size doubles, the number of
+operations also doubles.
+
+<P>
+<a name="youtry1">
+<hr>
+<center>
+<u><b>TEST YOURSELF #1</b></u>
+</center></a>
+<P>
+Assume that lists are implemented using an array.
+For each of the following <em>List</em> methods, say whether (in
+the worst case) the
+number of operations is independent of the size of the list (is a
+constant-time method), or is proportional to the size of the list
+(is a linear-time method):
+<UL>
+  <LI> the constructor
+  <LI> <em>add</em> (to the end of the list)
+  <LI> <em>add</em> (at a given position in the list)
+  <LI> <em>isEmpty</em>
+  <LI> <em>contains</em>
+  <LI> <em>get</em>
+</UL>
+
+<p>
+<a href="COMPLEXITY-answers.html#ans1">solution</a>
+<hr>
+
+<P>
+Constant and linear times are not the only possibilities.
+For example, consider method <em>createList</em>:
+<UL>
+<pre>
+List createList( int N ) {
+  List L = new List();
+  for (int k=1; k<=N; k++) L.add(0, new Integer(k));
+  return L;
+}
+</pre>
+</UL>
+Note that, for a given N, the for-loop above is equivalent to:
+<UL>
+<pre>
+L.add(0, new Integer(1) );
+L.add(0, new Integer(2) );
+L.add(0, new Integer(3) );
+    ...
+L.add(0, new Integer(N) );
+</pre>
+</UL>
+If we assume that the initial array is large enough to hold N items,
+then the number of operations for each call to <em>add</em>
+is proportional to the number of items in the list when
+<em>add</em> is called (because it has to move every item already
+in the array one place to the right to make room for the new item
+at position 0).
+For the N calls shown above, the list lengths are: 0, 1, 2, ..., N-1.
+So what is the total time for all N calls?
+It is proportional to 0 + 1 + 2 + ... + N-1.
+<P>
+Recall that we don't care about the exact time, just how the time
+depends on the problem size.
+For method <em>createList</em>, the "problem size" is the value of N
+(because the number
+of operations will be different for different values of N).
+It is clear that the time for the N calls (and therefore the time for
+method <em>createList</em>) is <b>not</b> independent of N
+(so <em>createList</em> is not a constant-time method).
+Is it proportional to N (linear in N)?
+That would mean that doubling N would double the number of operations
+performed by <em>createList</em>.
+Here's a table showing the value of 0+1+2+...+(N-1) for some different
+values of N:
+<P>
+<center>
+<table border=1> <tr>
+<td><b>N</b>  <td><b>0+1+2+...+(N-1)</b>
+<tr>
+<td>4  <td align=center>6
+<tr>
+<td>8  <td align=center>28
+<tr>
+<td>16  <td align=center>120
+</table>
+</center>
+<P>
+Clearly, the value of the sum does more than double when the value of
+N doubles, so <em>createList</em> is not linear in N.
+In the following graph, the bars represent the lengths
+of the list (0, 1, 2, ..., N-1) for each of the N calls.
+<P>
+<center>
+<IMG SRC="COMPLEXITY-FIGURES/n-squared.gif">
+</center>
+<P>
+The value of the sum (0+1+2+...+(N-1)) is the sum of the areas of the
+individual bars.
+You can see that the bars fill about half of the square.
+The whole square is an N-by-N square, so its area is N<sup>2</sup>;
+therefore, the sum of the areas of the bars is about N<sup>2</sup>/2.
+In other words, the time for method <em>createList</em> is proportional
+to the <b>square</b> of the problem size;
+if the problem size doubles, the number of operations will quadruple.
+We say that the worst-case time for <em>createList</em> is
+<b>quadratic</b> in the problem size.
+
+<P>
+<a name="youtry2">
+<hr>
+<center>
+<u><b>TEST YOURSELF #2</b></u>
+</center></a>
+<P>
+Consider the following three algorithms for determining whether
+anyone in the room has the same birthday as you.
+
+<P>
+<em>Algorithm 1</em>:
+You say your birthday, and ask whether anyone in the room has the same
+birthday.
+If anyone does have the same birthday, they answer yes.
+
+<P>
+<em>Algorithm 2</em>:
+You tell the first person your birthday, and ask if they have the same
+birthday; if they say no, you tell the second person your birthday and ask
+whether they have the same birthday; etc, for each person in the room.
+
+<P>
+<em>Algorithm 3</em>:
+You only ask questions of person 1, who only asks questions of person 2,
+who only asks questions of person 3, etc.
+You tell person 1 your birthday, and ask if they have the same
+birthday; if they say no, you ask them to find out about person 2.
+Person 1 asks person 2 and tells you the answer.
+If it is no, you ask person 1 to find out about person 3.
+Person 1 asks person 2 to find out about person 3, etc.
+
+<P>
+Question 1:
+For each algorithm, what is the factor that can affect the number of
+questions asked (the "problem size")?
+<P>
+Question 2:
+In the worst case, how many questions will be asked for each of the
+three algorithms?
+<P>
+Question 3:
+For each algorithm, say whether it is constant, linear, or quadratic in
+the problem size in the worst case.
+
+<p>
+<a href="COMPLEXITY-answers.html#ans2">solution</a>
+<hr>
+
+
+<A NAME="bigO">
+<H2>Big-O Notation</H2></A>
+
+We express complexity using <b>big-O notation</b>.
+For a problem of size N:
+<UL>
+  <LI> a constant-time method is "order 1": O(1)
+  <LI> a linear-time method is "order N": O(N)
+  <LI> a quadratic-time method is "order N squared": O(N<sup>2</sup>)
+</UL>
+
+Note that the big-O expressions do not have constants or low-order terms.
+This is because, when N gets large enough, constants and low-order
+terms don't matter (a constant-time method will be faster than a
+linear-time method, which will be faster than a quadratic-time method).
+See <a href="#faster">below</a> for an example.
+
+<P>
+Formal definition:
+<UL>
+A function T(N) is O(F(N)) if for some constant c and for all values
+of N greater than some value n<sub>0</sub>:
+<center>
+T(N) &lt;= c * F(N)
+</center>
+</UL>
+The idea is that T(N) is the <b>exact</b> complexity of a method or algorithm
+as a function of the
+problem size N, and that F(N) is an upper-bound on that complexity (i.e.,
+the actual time/space or whatever for a problem of size N will be no
+worse than F(N)).
+In practice, we want the smallest F(N) -- the <b>least</b> upper
+bound on the actual complexity.
+
+<P>
+For example, consider T(N) = 3 * N<sup>2</sup> + 5.
+We can show that T(N) is O(N<sup>2</sup>) by choosing c = 4 and
+n<sub>0</sub> = 2.
+This is because for all values of N greater than 2:
+<center>
+3 * N<sup>2</sup> + 5 &lt;= 4 * N<sup>2</sup>
+</center>
+<P>
+T(N) is <b>not</b> O(N), because whatever constant c and value
+n<sub>0</sub> you choose, I can always find a value of N greater than
+n<sub>0</sub> so that 3 * N<sup>2</sup> + 5 is greater than
+c * N.
+
+<A NAME="application">
+<H2>How to Determine Complexities</H2>
+
+In general, how can you determine the running time of a piece of code?
+The answer is that it depends on what kinds of statements are used.
+
+<OL>
+  <LI> Sequence of statements
+<UL>
+<pre>
+statement 1;
+statement 2;
+  ...
+statement k;
+</pre>
+</UL>
+(Note: this is code that really is exactly k statements; this is
+<b>not</b> an unrolled loop like the N calls to <em>add</em>
+shown above.)
+The total time is found by adding the times for all statements:
+<P>total time = time(statement 1) + time(statement 2) + ... + time(statement k)</P>
+If each statement is "simple" (only involves basic operations)
+then the time for each
+statement is constant and the total time is also constant: O(1).
+In the following examples, assume the statements are simple unless
+noted otherwise.</P>
+
+  <LI> if-then-else statements
+<UL>
+<pre>
+if (condition) {
+    sequence of statements 1
+}
+else {
+    sequence of statements 2
+}
+</pre>
+</UL>
+Here, either sequence 1 will execute, or sequence 2 will execute.
+Therefore, the worst-case time is the slowest of the two possibilities:
+max(time(sequence 1), time(sequence 2)).
+For example, if sequence 1 is O(N) and sequence 2 is O(1)
+the worst-case time for the whole if-then-else statement would be O(N).
+
+  <P>
+  <LI>for loops
+<UL>
+<pre>
+for (i = 0; i &lt; N; i++) {
+    sequence of statements
+}
+</pre>
+</UL>
+The loop executes N times, so
+the sequence of statements also executes N times.
+Since we assume the statements are O(1), the total time for the for loop
+is N * O(1), which is O(N) overall.
+
+  <P>
+  <LI>Nested loops
+  <P>
+  First we'll consider loops where the number of iterations of the inner
+  loop is independent of the value of the outer loop's index.  For example:
+<UL>
+<pre>
+for (i = 0; i &lt; N; i++) {
+    for (j = 0; j &lt; M; j++) {
+        sequence of statements
+    }
+}
+</pre>
+</UL>
+
+The outer loop executes N times.
+Every time the outer loop executes, the inner loop executes M times.
+As a result, the statements in the inner loop execute a total of
+N * M times.
+Thus, the complexity is O(N * M).
+In a common special case where the stopping condition of the inner loop
+is <tt>j &lt; N</tt> instead of <tt>j &lt M</tt> (i.e., the inner loop also
+executes N times), the total complexity for the two loops is
+O(N<SUP>2</SUP>).
+
+<P>
+Now let's consider nested loops where the number of iterations of the
+inner loop depends on the value of the outer loop's index.  For example:
+<UL>
+<pre>
+for (i = 0; i &lt; N; i++) {
+    for (j = i+1; j &lt; N; j++) {
+        sequence of statements
+    }
+}
+</pre>
+</UL>
+Now we can't just multiply the number of iterations of the outer loop times
+the number of iterations of the inner loop, because the inner loop has a
+different number of iterations each time.
+So let's think about how many iterations that inner loop has.
+That information is given in the following table:
+<P>
+<center>
+<TABLE width=70%>
+<tr><td>Value of i
+    <td>Number of iterations of inner loop
+<tr><td>0
+    <td>N
+<tr><td>1
+    <td>N-1
+<tr><td>2
+    <td>N-2
+<tr><td>...
+    <td>...
+<tr><td>N-2
+    <td>2
+<tr><td>N-1
+    <td>1
+</TABLE>
+</center>
+So we can see that the total number of times the sequence of statements
+executes is: N + N-1 + N-2 + ... + 3 + 2 + 1.
+We've seen that formula before: the total is O(N<sup>2</sup>).
+
+<P>
+<a name="youtry3">
+<hr>
+<center>
+<u><b>TEST YOURSELF #3</b></u>
+</center></a>
+<P>
+
+What is the worst-case complexity of the each of the following code fragments?
+
+<OL>
+  <LI>Two loops in a row:
+<UL>
+<pre>
+for (i = 0; i &lt; N; i++) {
+    sequence of statements
+}
+for (j = 0; j &lt; M; j++) {
+    sequence of statements
+}
+</pre>
+</UL>
+How would the complexity change if the second loop went to N instead of M?
+
+  <P>
+  <LI> A nested loop followed by a non-nested loop:
+<UL>
+<pre>
+for (i = 0; i &lt; N; i++) {
+    for (j = 0; j &lt; N; j++) {
+        sequence of statements
+    }
+}
+for (k = 0; k &lt; N; k++) {
+    sequence of statements
+}
+</pre>
+</UL>
+
+  <P>
+  <LI> A nested loop in which the number of times the
+       inner loop executes depends on the value of the outer loop index:
+<UL>
+<pre>
+for (i = 0; i &lt; N; i++) {
+    for (j = N; j &gt; i; j--) {
+        sequence of statements
+    }
+}
+</pre>
+</UL>
+</OL>
+
+<p>
+<a href="COMPLEXITY-answers.html#ans3">solution</a>
+<hr>
+
+
+  <P>
+  <LI> Statements with method calls:
+       <P> When a statement involves a method call, the complexity of the
+           statement includes the complexity of the method call.
+	   Assume that you know that method <em>f</em> takes constant time, and
+	   that method <em>g</em> takes time proportional to (linear in) the
+	   value of its parameter <em>k</em>.
+	   Then the statements below have the time complexities indicated.
+<UL>
+<pre>
+f(k);  // O(1)
+g(k);  // O(k)
+</pre>
+</UL>
+When a loop is involved, the same rule applies.
+For example:
+<UL>
+<pre>
+for (j = 0; j &lt; N; j++) g(N);
+</pre>
+</UL>
+has complexity (N<SUP>2</SUP>).
+The loop executes N times and each method call
+</FONT><CODE>g(N)</CODE> is complexity O(N).
+
+<P>
+<a name="youtry4">
+<hr>
+<center>
+<u><b>TEST YOURSELF #4</b></u>
+</center></a>
+<P>
+
+For each of the following loops with a method call, determine the
+overall complexity.  As above, assume that method <em>f</em> takes
+constant time, and that method <em>g</em> takes time linear in the value
+of its parameter.
+
+<UL>
+<pre>
+1. for (j = 0; j &lt; N; j++) f(j);
+
+2. for (j = 0; j &lt; N; j++) g(j);
+
+3. for (j = 0; j &lt; N; j++) g(k);
+</pre>
+</UL>
+<p>
+<a href="COMPLEXITY-answers.html#ans4">solution</a>
+<hr>
+</OL>
+
+<a name="best">
+<H2>Best-case and Average-case Complexity</H2>
+</A>
+<P>
+Some methods may require different amounts of time on different calls,
+even when the problem size is the same for both calls.
+For example, consider the <em>add</em> method that adds an item to the
+end of the list.
+In the worst case (the array is full), that method requires time
+proportional to the number of items in the list (because it has
+to copy all of them into the new, larger array).
+However, when the array is not full, <em>add</em> will only have
+to copy one value into the array, so in that case its time is
+independent of the length of the list; i.e., constant time.
+
+<P>
+In general, we may want to consider the <b>best</b> and <b>average</b>
+time requirements of a method as well as its worst-case time requirements.
+Which is considered the most important will depend on several factors.
+For example, if a method is part of a time-critical system like one that
+controls an airplane, the worst-case times are probably the most important
+(if the plane is flying towards a mountain and the controlling program
+can't make the next course correction until it has performed a computation,
+then the best-case and average-case times for that computation are
+not relevant -- the computation needs to be guaranteed to be fast enough
+to finish before the plane hits the mountain).
+
+<P>
+On the other hand, if occasionally waiting a long time for an answer is
+merely inconvenient (as opposed to life-threatening), it may be better
+to use an algorithm with a slow worst-case time and a fast average-case
+time, rather than one with so-so times in both the average and worst cases.
+
+<P>
+Note that calculating the average-case time for a method can be tricky.
+You need to consider all possible values for the important factors, and
+whether they will be distributed evenly.
+
+<a name="constants">
+<H2>When do Constants Matter?</H2>
+</A>
+
+<P>
+Recall that when we use big-O notation, we drop constants and low-order
+terms.
+This is because when the problem size gets sufficiently large, those
+terms don't matter.
+
+However, this means that
+two algorithms can have the <b>same</b> big-O time complexity,
+even though one is always faster than the other.
+For example, suppose algorithm 1 requires N<sup>2</sup> time, and
+algorithm 2 requires 10 * N<sup>2</sup> + N time.
+For both algorithms, the time is O(N<sup>2</sup>), but
+algorithm 1 will always be faster than algorithm 2.
+In this case, the constants and low-order terms <b>do</b> matter in terms
+of which algorithm is actually faster.
+
+<P>
+However, it is important to note that constants do <em>not</em> matter in terms
+of the question of how an algorithm "scales" (i.e., how does the algorithm's
+time change when the problem size doubles).
+Although an algorithm that requires N<sup>2</sup> time will always be
+faster than an algorithm that requires 10*N<sup>2</sup> time, for
+<b>both</b> algorithms, if the problem size doubles, the actual time
+will quadruple.
+
+<a name = "faster">
+<P>
+When two algorithms have <b>different</b> big-O time complexity,
+the constants and low-order terms only matter when the problem size
+is small.
+For example, even if there are large constants involved, a linear-time
+algorithm will always eventually be faster than a quadratic-time algorithm.
+This is illustrated in the following table, which shows the value of
+100*N (a time that is linear in N) and the value of N<sup>2</sup>/100 
+(a time that is quadratic in N) for some values of N.
+For values of N less than 10<sup>4</sup>, the quadratic time is
+smaller than the linear time.
+However, for all values of N greater than 10<sup>4</sup>, the linear time
+is smaller.
+<P>
+<center>
+<table border>
+<tr>
+<td><b>N</b>  <td><b>100*N</b> <td><b>N<sup>2</sup>/100</b>
+<tr>
+<td>10<sup>2</sup>  <td>10<sup>4</sup>  <td>10<sup>2</sup>
+<tr>
+<td>10<sup>3</sup>  <td>10<sup>5</sup>  <td>10<sup>4</sup>
+<tr>
+<td>10<sup>4</sup>  <td>10<sup>6</sup>  <td>10<sup>6</sup>
+<tr>
+<td>10<sup>5</sup>  <td>10<sup>7</sup>  <td>10<sup>8</sup>
+<tr>
+<td>10<sup>6</sup>  <td>10<sup>8</sup>  <td>10<sup>10</sup>
+<tr>
+<td>10<sup>7</sup>  <td>10<sup>9</sup>  <td>10<sup>12</sup>
+</table>
+</center>
+
+<p>
+<a name = "answers">
+<H2>Answers to Self-Study Questions</H2>
+
+
